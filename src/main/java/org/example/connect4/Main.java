@@ -29,7 +29,7 @@ public class Main {
                 break;
             }
 
-            // Switch player
+
             currentPlayer = (currentPlayer == player1) ? player2 : player1;
         }
         scanner.close();
