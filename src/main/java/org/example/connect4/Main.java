@@ -10,7 +10,7 @@ public class Main {
             System.out.print("Enter the name for Player 1: ");
             String player1Name = scanner.nextLine();
 
-            GameBoard board = new GameBoard(6, 7); // 6 rows and 7 columns
+            GameBoard board = new GameBoard(6, 7); 
             Player player1 = new Player(player1Name + " (Yellow)", 'X');
             Bot bot = new Bot("Bot (Red)", 'O');
             Player currentPlayer = player1;
@@ -30,7 +30,7 @@ public class Main {
                     }
                 } else {
                     System.out.printf("%s, choose a column (1-7): ", currentPlayer.getName());
-                    int column = scanner.nextInt() - 1; // Adjust for 0-based index
+                    int column = scanner.nextInt() - 1; 
                     if (column < 0 || column >= board.getColumns() || !board.applyMove(column, currentPlayer.getToken())) {
                         System.out.println("Invalid move, try again.");
                         continue;
