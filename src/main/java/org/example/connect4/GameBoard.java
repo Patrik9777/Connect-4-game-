@@ -15,16 +15,16 @@ public class GameBoard {
     private void initializeBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                board[i][j] = '.';
+                board[i][j] = '.'; // '.' represents an empty cell
             }
         }
     }
 
     public boolean applyMove(int column, char playerToken) {
         if (column < 0 || column >= columns) {
-            throw new IllegalArgumentException("Invalid column: " + column); // Dobja a kivételt
+            throw new IllegalArgumentException("Invalid column: " + column);
         }
-        for (int i = rows - 1; i >= 0; i--) {
+        for (int i = 0; i < rows; i++) {
             if (board[i][column] == '.') {
                 board[i][column] = playerToken;
                 return true;
@@ -82,12 +82,30 @@ public class GameBoard {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < rows; i++) {
+
+
+        sb.append("  ");
+        for (int j = 0; j < columns; j++) {
+            sb.append((char) ('A' + j)).append(' ');
+        }
+        sb.append('\n');
+
+
+        sb.append(" +");
+        for (int j = 0; j < columns; j++) {
+            sb.append("--");
+        }
+        sb.append('\n');
+
+
+        for (int i = rows - 1; i >= 0; i--) {
+            sb.append(i + 1).append(" |");
             for (int j = 0; j < columns; j++) {
                 sb.append(board[i][j]).append(' ');
             }
             sb.append('\n');
         }
+
         return sb.toString();
     }
 
@@ -95,11 +113,18 @@ public class GameBoard {
         return applyMove(column, disc);
     }
 
-
     public char getCell(int row, int column) {
         if (row < 0 || row >= rows || column < 0 || column >= columns) {
             throw new IllegalArgumentException("Invalid row or column.");
         }
         return board[row][column];
+    }
+
+    public boolean isColumnValid(int column) {
+        return column >= 0 && column < columns && board[rows - 1][column] == '.';
+    }
+
+    public int getColumns() {
+        return columns;
     }
 }
