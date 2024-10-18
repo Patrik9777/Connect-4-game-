@@ -8,8 +8,8 @@ public class Game {
     }
 
     public void start() {
-
+        // Indítsd el a játékot itt
         System.out.println("Játék indul!");
-
+        // További játékmenet logika
     }
 }
