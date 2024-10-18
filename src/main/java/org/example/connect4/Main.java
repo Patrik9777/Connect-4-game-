@@ -5,7 +5,7 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        GameBoard board = new GameBoard(6, 7); // 6 rows and 7 columns
+        GameBoard board = new GameBoard(6, 7); 
         Player player1 = new Player("Player 1 (Yellow)", 'Y');
         Player player2 = new Player("Player 2 (Red)", 'R');
         Player currentPlayer = player1;
