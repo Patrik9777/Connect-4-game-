@@ -22,7 +22,7 @@ public class GameBoard {
 
     public boolean applyMove(int column, char playerToken) {
         if (column < 0 || column >= columns) {
-            throw new IllegalArgumentException("Invalid column: " + column); // Dobja a kivételt
+            throw new IllegalArgumentException("Invalid column: " + column);
         }
         for (int i = rows - 1; i >= 0; i--) {
             if (board[i][column] == '.') {
