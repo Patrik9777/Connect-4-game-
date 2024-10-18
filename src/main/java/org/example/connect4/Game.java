@@ -4,7 +4,7 @@ public class Game {
     private GameBoard gameBoard;
 
     public Game() {
-        gameBoard = new GameBoard(6, 7); // Példa: 6 sor és 7 oszlop
+        gameBoard = new GameBoard(6, 7);
     }
 
     public void start() {

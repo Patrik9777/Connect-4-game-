@@ -15,7 +15,7 @@ public class GameBoard {
     private void initializeBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                board[i][j] = '.'; // '.' represents an empty cell
+                board[i][j] = '.';
             }
         }
     }
@@ -30,7 +30,7 @@ public class GameBoard {
                 return true;
             }
         }
-        return false; // Column is full
+        return false;
     }
 
     public boolean checkWin(char playerToken) {
@@ -60,7 +60,7 @@ public class GameBoard {
     }
 
     private boolean checkDiagonalWin(char playerToken) {
-        // Check for diagonal win (\)
+
         for (int r = 0; r < rows - 3; r++) {
             for (int c = 0; c < columns - 3; c++) {
                 if (board[r][c] == playerToken && board[r + 1][c + 1] == playerToken && board[r + 2][c + 2] == playerToken && board[r + 3][c + 3] == playerToken) {
@@ -68,7 +68,7 @@ public class GameBoard {
                 }
             }
         }
-        // Check for diagonal win (/)
+
         for (int r = 3; r < rows; r++) {
             for (int c = 0; c < columns - 3; c++) {
                 if (board[r][c] == playerToken && board[r - 1][c + 1] == playerToken && board[r - 2][c + 2] == playerToken && board[r - 3][c + 3] == playerToken) {
@@ -91,12 +91,11 @@ public class GameBoard {
         return sb.toString();
     }
 
-    // Implementing addDisc method
     public boolean addDisc(int column, char disc) {
         return applyMove(column, disc);
     }
 
-    // Implementing getCell method
+
     public char getCell(int row, int column) {
         if (row < 0 || row >= rows || column < 0 || column >= columns) {
             throw new IllegalArgumentException("Invalid row or column.");

@@ -16,12 +16,11 @@ public class FileManager {
     public static GameBoard loadGame(String filePath) {
         try {
             String content = Files.readString(Path.of(filePath));
-            // Parse the content and create GameBoard object
-            // For this example, we won't implement loading from file
-            return new GameBoard(6, 7); // Default board size
+
+            return new GameBoard(6, 7);
         } catch (IOException e) {
             System.out.println("No saved game found, starting new game.");
-            return new GameBoard(6, 7);  // Default board size
+            return new GameBoard(6, 7);
         }
     }
 }
