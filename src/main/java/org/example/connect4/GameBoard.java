@@ -15,7 +15,7 @@ public class GameBoard {
     private void initializeBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                board[i][j] = '.'; // '.' represents an empty cell
+                board[i][j] = '.';
             }
         }
     }
