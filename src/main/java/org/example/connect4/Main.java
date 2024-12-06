@@ -1,36 +1,40 @@
 package org.example.connect4;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        while (true) {
-            System.out.print("Enter the name for Player 1: ");
-            String player1Name = scanner.nextLine();
+        System.out.print("Would you like to reset the scores? (yes/no): ");
+        String resetResponse = scanner.nextLine();
 
-            GameBoard board = new GameBoard(6, 7); // 6 rows and 7 columns
-            Player player1 = new Player(player1Name + " (Yellow)", 'X');
-            Bot bot = new Bot("Bot (Red)", 'O');
-            Player currentPlayer = player1;
+        if (resetResponse.equalsIgnoreCase("yes")) {
+            DatabaseManager.resetScores();
+        }
+
+        while (true) {
+            System.out.print("Enter your name: ");
+            String playerName = scanner.nextLine();
+            String cleanPlayerName = playerName.replaceAll(" \\(Yellow\\)| \\(Red\\)", "").trim();
+
+            GameBoard board = new GameBoard(6, 7);
+            Player player = new Player(playerName + " (Yellow)", 'X');
+            Bot bot = new Bot("Bot", 'O');
+            Player currentPlayer = player;
 
             System.out.println("Welcome to Connect-4");
             System.out.println(board);
 
             while (true) {
                 if (currentPlayer instanceof Bot) {
-                    try {
-                        int column = ((Bot) currentPlayer).chooseColumn(board);
-                        board.applyMove(column, currentPlayer.getToken());
-                        System.out.printf("%s chooses column %d\n", currentPlayer.getName(), column + 1);
-                    } catch (IllegalStateException e) {
-                        System.out.println(e.getMessage());
-                        break;
-                    }
+                    int column = ((Bot) currentPlayer).chooseColumn(board);
+                    board.applyMove(column, currentPlayer.getToken());
+                    System.out.printf("%s chooses column %d\n", currentPlayer.getName(), column + 1);
                 } else {
                     System.out.printf("%s, choose a column (1-7): ", currentPlayer.getName());
-                    int column = scanner.nextInt() - 1; // Adjust for 0-based index
+                    int column = scanner.nextInt() - 1;
                     if (column < 0 || column >= board.getColumns() || !board.applyMove(column, currentPlayer.getToken())) {
                         System.out.println("Invalid move, try again.");
                         continue;
@@ -41,10 +45,15 @@ public class Main {
 
                 if (board.checkWin(currentPlayer.getToken())) {
                     System.out.printf("%s wins!\n", currentPlayer.getName());
+                    if (currentPlayer == player) {
+                        DatabaseManager.upsertPlayer(cleanPlayerName, 1);
+                    } else if (currentPlayer == bot) {
+                        DatabaseManager.upsertPlayer(bot.getName(), 1);
+                    }
                     break;
                 }
 
-                currentPlayer = (currentPlayer == player1) ? bot : player1;
+                currentPlayer = (currentPlayer == player) ? bot : player;
             }
 
             System.out.print("Do you want to play again? (yes/no): ");
@@ -58,5 +67,11 @@ public class Main {
         }
 
         scanner.close();
+
+        List<String> highScores = DatabaseManager.getHighScores();
+        System.out.println("High Scores:");
+        for (String score : highScores) {
+            System.out.println(score);
+        }
     }
 }

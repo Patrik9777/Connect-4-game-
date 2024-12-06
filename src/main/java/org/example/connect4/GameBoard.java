@@ -24,6 +24,7 @@ public class GameBoard {
         if (column < 0 || column >= columns) {
             throw new IllegalArgumentException("Invalid column: " + column);
         }
+        // Az oszlop tetejétől kezdjük a keresést, és lefelé haladunk
         for (int i = 0; i < rows; i++) {
             if (board[i][column] == '.') {
                 board[i][column] = playerToken;
@@ -60,7 +61,6 @@ public class GameBoard {
     }
 
     private boolean checkDiagonalWin(char playerToken) {
-
         for (int r = 0; r < rows - 3; r++) {
             for (int c = 0; c < columns - 3; c++) {
                 if (board[r][c] == playerToken && board[r + 1][c + 1] == playerToken && board[r + 2][c + 2] == playerToken && board[r + 3][c + 3] == playerToken) {
@@ -68,7 +68,6 @@ public class GameBoard {
                 }
             }
         }
-
         for (int r = 3; r < rows; r++) {
             for (int c = 0; c < columns - 3; c++) {
                 if (board[r][c] == playerToken && board[r - 1][c + 1] == playerToken && board[r - 2][c + 2] == playerToken && board[r - 3][c + 3] == playerToken) {
@@ -83,20 +82,17 @@ public class GameBoard {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-
         sb.append("  ");
         for (int j = 0; j < columns; j++) {
             sb.append((char) ('A' + j)).append(' ');
         }
         sb.append('\n');
 
-
         sb.append(" +");
         for (int j = 0; j < columns; j++) {
             sb.append("--");
         }
         sb.append('\n');
-
 
         for (int i = rows - 1; i >= 0; i--) {
             sb.append(i + 1).append(" |");
@@ -121,7 +117,7 @@ public class GameBoard {
     }
 
     public boolean isColumnValid(int column) {
-        return column >= 0 && column < columns && board[rows - 1][column] == '.';
+        return column >= 0 && column < columns && board[0][column] == '.';
     }
 
     public int getColumns() {

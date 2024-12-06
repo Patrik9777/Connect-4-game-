@@ -1,125 +1,126 @@
 package org.example.connect4;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class DatabaseManager {
-    private static final String URL = "jdbc:sqlite:connect4.db";
+    private static String FILE_PATH = "players.json";
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     static {
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load SQLite JDBC driver.", e);
-        }
+        initializeFile();
     }
 
-    public static Connection connect() {
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(URL);
-            System.out.println("Connection to SQLite has been established.");
-        } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
-        }
-        return conn;
+    /**
+     * Set the file path dynamically, useful for testing.
+     *
+     * @param filePath the file path to use
+     */
+    public static void setFilePath(String filePath) {
+        FILE_PATH = filePath;
+        initializeFile();
     }
 
-    public static void createNewTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS players (\n"
-                + " id integer PRIMARY KEY,\n"
-                + " name text NOT NULL UNIQUE,\n"
-                + " score integer\n"
-                + ");";
-
-        try (Connection conn = connect();
-             Statement stmt = conn != null ? conn.createStatement() : null) {
-            if (stmt != null) {
-                stmt.execute(sql);
-                System.out.println("Table created.");
-            } else {
-                System.out.println("Failed to create statement.");
+    private static void initializeFile() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+                mapper.writeValue(file, new ArrayList<PlayerScore>());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to initialize the JSON file.", e);
             }
-        } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
         }
     }
 
     public static void upsertPlayer(String name, int score) {
-        String selectSql = "SELECT score FROM players WHERE name = ?";
-        String updateSql = "UPDATE players SET score = ? WHERE name = ?";
-        String insertSql = "INSERT INTO players(name, score) VALUES(?,?)";
+        List<PlayerScore> players = loadPlayers();
+        boolean playerFound = false;
 
-        try (Connection conn = connect();
-             PreparedStatement selectStmt = conn != null ? conn.prepareStatement(selectSql) : null;
-             PreparedStatement updateStmt = conn != null ? conn.prepareStatement(updateSql) : null;
-             PreparedStatement insertStmt = conn != null ? conn.prepareStatement(insertSql) : null) {
-
-            if (selectStmt != null) {
-                selectStmt.setString(1, name);
-                ResultSet rs = selectStmt.executeQuery();
-                if (rs.next()) {
-                    // Frissíti a meglévő játékos pontszámát
-                    int currentScore = rs.getInt("score");
-                    System.out.println("Current score for " + name + ": " + currentScore);
-                    updateStmt.setInt(1, currentScore + score);
-                    updateStmt.setString(2, name);
-                    updateStmt.executeUpdate();
-                    System.out.println("Updated score for " + name + ": " + (currentScore + score));
-                } else {
-                    // Új játékos beszúrása
-                    insertStmt.setString(1, name);
-                    insertStmt.setInt(2, score);
-                    insertStmt.executeUpdate();
-                    System.out.println("Inserted new player " + name + " with score: " + score);
-                }
-            } else {
-                System.out.println("Failed to create select statement.");
+        for (PlayerScore player : players) {
+            if (player.getName().equals(name)) {
+                player.setScore(player.getScore() + score);
+                playerFound = true;
+                break;
             }
-        } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
         }
+
+        if (!playerFound) {
+            players.add(new PlayerScore(name, score));
+        }
+
+        savePlayers(players);
     }
 
     public static List<String> getHighScores() {
-        String sql = "SELECT name, score FROM players ORDER BY score DESC LIMIT 10";
+        List<PlayerScore> players = loadPlayers();
+        players.sort(Comparator.comparingInt(PlayerScore::getScore).reversed());
+
         List<String> highScores = new ArrayList<>();
-
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn != null ? conn.prepareStatement(sql) : null;
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                String name = rs.getString("name");
-                int score = rs.getInt("score");
-                highScores.add(name + " - " + score);
-            }
-        } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+        for (int i = 0; i < Math.min(players.size(), 10); i++) {
+            PlayerScore player = players.get(i);
+            highScores.add(player.getName() + " - " + player.getScore());
         }
 
         return highScores;
     }
 
     public static void resetScores() {
-        String sql = "UPDATE players SET score = 0";
+        List<PlayerScore> players = loadPlayers();
+        for (PlayerScore player : players) {
+            player.setScore(0);
+        }
+        savePlayers(players);
+    }
 
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn != null ? conn.prepareStatement(sql) : null) {
-            if (pstmt != null) {
-                pstmt.executeUpdate();
-                System.out.println("All scores have been reset to zero.");
-            } else {
-                System.out.println("Failed to create update statement.");
-            }
-        } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+    private static List<PlayerScore> loadPlayers() {
+        try {
+            return mapper.readValue(new File(FILE_PATH), new TypeReference<List<PlayerScore>>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load players from the JSON file.", e);
+        }
+    }
+
+    private static void savePlayers(List<PlayerScore> players) {
+        try {
+            mapper.writeValue(new File(FILE_PATH), players);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save players to the JSON file.", e);
+        }
+    }
+
+    // pontok
+    private static class PlayerScore {
+        private String name;
+        private int score;
+
+        public PlayerScore() {}
+
+        public PlayerScore(String name, int score) {
+            this.name = name;
+            this.score = score;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public void setScore(int score) {
+            this.score = score;
         }
     }
 }
